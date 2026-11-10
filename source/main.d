@@ -1,26 +1,24 @@
-import std.stdio;
 import raylib;
-import std.conv : to;
 import std.random;
 import std.algorithm : remove;
 
-immutable HEIGHT = 600;
-immutable WIDTH = 600;
+enum HEIGHT = 600;
+enum WIDTH = 600;
 
-immutable PILLAR_SPAWN_INTERVAL = 3;
-immutable PILLAR_SPEED = 100;
-immutable PILLAR_WIDTH = 80;
+enum PILLAR_SPAWN_INTERVAL = 3;
+enum PILLAR_SPEED = 100;
+immutable PILLAR_SIZE = Vector2(80, HEIGHT);
 
-immutable PILLAR_GAP_MAX = 300;
-immutable PILLAR_GAP_MIN = 250;
+enum PILLAR_GAP_MAX = 300;
+enum PILLAR_GAP_MIN = 250;
 
-immutable PILLAR_OFFSET_MAX = 100;
-immutable PILLAR_OFFSET_MIN = -100;
+enum PILLAR_OFFSET_MAX = 100;
+enum PILLAR_OFFSET_MIN = -100;
 
-immutable GRAVITY = 300;
-immutable BIRD_RADIUS = 30;
-immutable FLAP_STRENGTH = 200;
-immutable HITBOX_REDUCTION = 8;
+enum GRAVITY = 300;
+enum BIRD_RADIUS = 30;
+enum FLAP_STRENGTH = 200;
+enum HITBOX_REDUCTION = 8;
 
 float pillarSpawnDateAccumulator = 0;
 
@@ -28,11 +26,11 @@ Pillar[] pillars;
 Bird bird;
 bool running = false;
 
-class Sprite
+abstract class Sprite
 {
 	auto position = Vector2(0, 0);
 
-	void draw()
+	abstract void draw()
 	{
 	}
 
@@ -56,14 +54,11 @@ class Pillar : Sprite
 
 	override void draw()
 	{
-		const int px = to!int(position.x);
-		const int py = to!int(position.y);
-
 		// top
-		DrawRectangle(px, py - HEIGHT + pxVisibleFromTop, PILLAR_WIDTH, HEIGHT, Colors.GREEN);
+		DrawRectangleV(Vector2(position.x, position.y - HEIGHT + pxVisibleFromTop), PILLAR_SIZE, Colors.GREEN);
 
 		// bottom
-		DrawRectangle(px, py + HEIGHT - pxVisibleFromBottom, PILLAR_WIDTH, HEIGHT, Colors.GREEN);
+		DrawRectangleV(Vector2(position.x, position.y + HEIGHT - pxVisibleFromBottom), PILLAR_SIZE, Colors.GREEN);
 	}
 }
 
@@ -88,7 +83,7 @@ class Bird : Sprite
 		velocity = -FLAP_STRENGTH;
 	}
 
-	private bool isOutOfScreen()
+	bool isOutOfScreen()
 	{
 		if ((position.y > HEIGHT - BIRD_RADIUS + HITBOX_REDUCTION) || (
 				position.y < 0 + BIRD_RADIUS - HITBOX_REDUCTION))
@@ -99,33 +94,25 @@ class Bird : Sprite
 		return false;
 	}
 
-	private bool isCollidingWithAPillar()
+	bool isCollidingWithAPillar(const Pillar[] pillars) const
 	{
-		const float hitboxRadius = BIRD_RADIUS - HITBOX_REDUCTION;
-
+		const hitboxRadius = BIRD_RADIUS - HITBOX_REDUCTION;
 		foreach (pillar; pillars)
 		{
-			float leftBoundary = pillar.position.x;
-			if (position.x + hitboxRadius < leftBoundary)
-				continue;
+			auto top = Rectangle(pillar.position.x, 0, PILLAR_SIZE.x, pillar.pxVisibleFromTop);
+			auto bottom = Rectangle(pillar.position.x, HEIGHT - pillar.pxVisibleFromBottom,
+				PILLAR_SIZE.x, pillar.pxVisibleFromBottom);
 
-			float rightBoundary = pillar.position.x + PILLAR_WIDTH;
-			if (position.x - hitboxRadius > rightBoundary)
-				continue;
-
-			if (position.y - hitboxRadius < pillar.pxVisibleFromTop)
-				return true;
-
-			if (position.y + hitboxRadius  > HEIGHT - pillar.pxVisibleFromBottom)
+			if (CheckCollisionCircleRec(position, hitboxRadius, top) ||
+				CheckCollisionCircleRec(position, hitboxRadius, bottom))
 				return true;
 		}
-
 		return false;
 	}
 
-	bool shouldDie()
+	bool shouldDie(const Pillar[] pillars)
 	{
-		if ((isOutOfScreen()) | (isCollidingWithAPillar()))
+		if ((isOutOfScreen()) | (isCollidingWithAPillar(pillars)))
 		{
 			return true;
 		}
@@ -159,7 +146,7 @@ void tick(float dt)
 		pillars ~= pillar;
 	}
 
-	pillars = pillars.remove!(pillar => pillar.position.x < 0 - PILLAR_WIDTH);
+	pillars = pillars.remove!(pillar => pillar.position.x < 0 - PILLAR_SIZE.x);
 
 	if (IsKeyPressed(KeyboardKey.KEY_SPACE))
 	{
@@ -168,7 +155,7 @@ void tick(float dt)
 
 	bird.tick(dt);
 
-	if (bird.shouldDie())
+	if (bird.shouldDie(pillars))
 	{
 		running = false;
 	}
