@@ -1,0 +1,15 @@
+{
+  "name": "flappy-bird",
+  "description": "A flappy bird clone written in D.",
+  "authors": ["Matěj Skudřík"],
+  "license": "MIT",
+  "targetType": "executable",
+  "targetPath": "bin",
+  "targetName": "flappy-bird",
+
+  "dependencies": {
+    "raylib-d": "~>6.2.0"
+  },
+  "libs": ["raylib", "ucrt", "user32", "gdi32", "winmm"],
+  "lflags": ["/LIBPATH:raylib", "/NODEFAULTLIB:libucrt.lib"],
+}
