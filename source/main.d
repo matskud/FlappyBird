@@ -1,6 +1,6 @@
 import raylib;
 import std.random;
-import std.algorithm : remove;
+import std.algorithm : remove, min;
 
 enum HEIGHT = 600;
 enum WIDTH = 600;
@@ -202,7 +202,11 @@ int main()
 
 	while (running && !WindowShouldClose())
 	{
-		tick(GetFrameTime());
+		if (IsWindowFocused())
+		{
+			const float dt = min(GetFrameTime(), 0.05); // clamp to avoid giant frame jumps
+			tick(dt);
+		}
 
 		BeginDrawing();
 
