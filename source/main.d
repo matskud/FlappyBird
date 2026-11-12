@@ -26,6 +26,8 @@ Pillar[] pillars;
 Bird bird;
 bool running = false;
 
+Texture2D pillarTexture;
+
 abstract class Sprite
 {
 	auto position = Vector2(0, 0);
@@ -54,11 +56,24 @@ class Pillar : Sprite
 
 	override void draw()
 	{
-		// top
-		DrawRectangleV(Vector2(position.x, position.y - HEIGHT + pxVisibleFromTop), PILLAR_SIZE, Colors.GREEN);
+		const float texW = pillarTexture.width;
+		const float texH = pillarTexture.height;
+		const float scale = PILLAR_SIZE.y / texH;
 
-		// bottom
-		DrawRectangleV(Vector2(position.x, position.y + HEIGHT - pxVisibleFromBottom), PILLAR_SIZE, Colors.GREEN);
+		const float bottomY = position.y + HEIGHT - pxVisibleFromBottom;
+		DrawTexturePro(
+			pillarTexture,
+			Rectangle(0, 0, texW, pxVisibleFromBottom / scale),
+			Rectangle(position.x, bottomY, PILLAR_SIZE.x, pxVisibleFromBottom),
+			Vector2(0, 0), 0, Colors.WHITE
+		);
+
+		DrawTexturePro(
+			pillarTexture,
+			Rectangle(0, 0, texW, -(pxVisibleFromTop / scale)),
+			Rectangle(position.x, position.y, PILLAR_SIZE.x, pxVisibleFromTop),
+			Vector2(0, 0), 0, Colors.WHITE
+		);
 	}
 }
 
@@ -178,6 +193,8 @@ int main()
 	InitWindow(WIDTH, HEIGHT, "Flappybird");
 
 	SetTargetFPS(60);
+
+	pillarTexture = LoadTexture("art/pillar.png");
 
 	bird = new Bird();
 
