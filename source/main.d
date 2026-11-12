@@ -16,7 +16,7 @@ enum PILLAR_OFFSET_MAX = 100;
 enum PILLAR_OFFSET_MIN = -100;
 
 enum GRAVITY = 300;
-enum BIRD_RADIUS = 30;
+enum BIRD_RADIUS = 40;
 enum FLAP_STRENGTH = 200;
 enum HITBOX_REDUCTION = 8;
 
@@ -27,6 +27,7 @@ Bird bird;
 bool running = false;
 
 Texture2D pillarTexture;
+Texture2D birdTexture;
 
 abstract class Sprite
 {
@@ -137,7 +138,14 @@ class Bird : Sprite
 
 	override void draw()
 	{
-		DrawCircleV(position, BIRD_RADIUS, Colors.RED);
+		const float size = BIRD_RADIUS * 2;
+		DrawTexturePro(
+			birdTexture,
+			Rectangle(0, 0, birdTexture.width, birdTexture.height),
+			Rectangle(position.x, position.y, size, size),
+			Vector2(size / 2, size / 2),
+			0, Colors.WHITE
+		);
 	}
 }
 
@@ -193,6 +201,9 @@ int main()
 	InitWindow(WIDTH, HEIGHT, "Flappybird");
 
 	SetTargetFPS(60);
+
+	birdTexture = LoadTexture("art/bird.png");
+	SetTextureFilter(birdTexture, TextureFilter.TEXTURE_FILTER_BILINEAR);
 
 	pillarTexture = LoadTexture("art/pillar.png");
 
