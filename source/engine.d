@@ -47,14 +47,13 @@ void start(void delegate(float) tick, void delegate() render)
 		{
 			const float dt = min(ft, 0.05f); // clamp to avoid giant frame jumps
 			tick(dt);
-
-			BeginDrawing();
-
-			render();
-
-			EndDrawing();
-
 		}
+
+		BeginDrawing();
+
+		render();
+
+		EndDrawing();
 
 		if (!checked)
 		{
