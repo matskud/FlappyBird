@@ -1,6 +1,7 @@
 import raylib;
-import std.random;
-import std.algorithm : remove, min;
+import random = std.random;
+import std.algorithm : remove;
+static import engine;
 
 enum HEIGHT = 600;
 enum WIDTH = 600;
@@ -24,7 +25,6 @@ float pillarSpawnDateAccumulator = 0;
 
 Pillar[] pillars;
 Bird bird;
-bool running = false;
 
 Texture2D pillarTexture;
 Texture2D birdTexture;
@@ -46,10 +46,10 @@ class Pillar : Sprite
 
 	this()
 	{
-		const int gapSize = uniform(PILLAR_GAP_MIN, PILLAR_GAP_MAX);
+		const int gapSize = random.uniform(PILLAR_GAP_MIN, PILLAR_GAP_MAX);
 		const int pillarScreenSize = HEIGHT - gapSize;
 
-		const int pillarOffset = uniform(PILLAR_OFFSET_MIN, PILLAR_OFFSET_MAX);
+		const int pillarOffset = random.uniform(PILLAR_OFFSET_MIN, PILLAR_OFFSET_MAX);
 
 		pxVisibleFromBottom = pillarScreenSize / 2 + pillarOffset;
 		pxVisibleFromTop = pillarScreenSize / 2 - pillarOffset;
@@ -180,7 +180,7 @@ void tick(float dt)
 
 	if (bird.shouldDie(pillars))
 	{
-		running = false;
+		engine.kill();
 	}
 }
 
@@ -198,35 +198,14 @@ void render()
 
 int main()
 {
-	InitWindow(WIDTH, HEIGHT, "Flappybird");
+	engine.init("FlappyBird", WIDTH, HEIGHT, 60);
 
-	SetTargetFPS(60);
-
-	birdTexture = LoadTexture("art/bird.png");
-	SetTextureFilter(birdTexture, TextureFilter.TEXTURE_FILTER_BILINEAR);
-
-	pillarTexture = LoadTexture("art/pillar.png");
+	birdTexture = engine.loadTexture("art/bird.png");
+	pillarTexture = engine.loadTexture("art/pillar.png");
 
 	bird = new Bird();
 
-	running = true;
-
-	while (running && !WindowShouldClose())
-	{
-		if (IsWindowFocused())
-		{
-			const float dt = min(GetFrameTime(), 0.05); // clamp to avoid giant frame jumps
-			tick(dt);
-		}
-
-		BeginDrawing();
-
-		render();
-
-		EndDrawing();
-	}
-
-	CloseWindow();
+	engine.start(&tick, &render);
 
 	return 0;
 }
