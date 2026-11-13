@@ -198,7 +198,7 @@ void render()
 
 int main()
 {
-	engine.init("FlappyBird", WIDTH, HEIGHT, 60);
+	engine.init("FlappyBird", WIDTH, HEIGHT);
 
 	birdTexture = engine.loadTexture("art/bird.png");
 	pillarTexture = engine.loadTexture("art/pillar.png");
