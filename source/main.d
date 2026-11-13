@@ -1,3 +1,5 @@
+module main;
+
 import core.runtime;
 import core.sys.windows.windows;
 static import app;

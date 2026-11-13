@@ -1,3 +1,5 @@
+module engine;
+
 import raylib;
 import std.algorithm : min;
 import std.path : extension;
