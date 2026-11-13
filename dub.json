@@ -7,6 +7,7 @@
   "targetPath": "bin",
   "targetName": "flappy-bird",
   "stringImportPaths": ["."],
+  "lflags-windows": ["/SUBSYSTEM:WINDOWS"],
 
   "dependencies": {
     "raylib-d": "~>6.2.0"
