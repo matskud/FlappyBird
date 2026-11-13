@@ -1,25 +1,29 @@
 import raylib;
 import std.algorithm : min;
 import std.path : extension;
+import std.string : toStringz;
 
 private bool running = false;
+double secondsSinceStarted;
 
 /*
 	Initialises the window and enables vsync.
 */
-void init(const char* name, const int width, const int height)
+void init(string name, const int width, const int height)
 {
 	SetConfigFlags(ConfigFlags.FLAG_VSYNC_HINT);
-	InitWindow(width, height, name);
+	InitWindow(width, height, toStringz(name));
 }
 
 /*
 	Starts the main loop.
 	Handles vsync not working.
+	Calculates secondsSinceStarted.
 */
-void start(void function(float) tick, void function() render)
+void start(void delegate(float) tick, void delegate() render)
 {
 	running = true;
+	secondsSinceStarted = 0;
 
 	int hz = GetMonitorRefreshRate(GetCurrentMonitor());
 	if (hz <= 0)
@@ -33,17 +37,22 @@ void start(void function(float) tick, void function() render)
 
 	while (!WindowShouldClose() && running)
 	{
+		float ft = GetFrameTime();
+
+		secondsSinceStarted += ft;
+
 		if (IsWindowFocused())
 		{
-			const float dt = min(GetFrameTime(), 0.05); // clamp to avoid giant frame jumps
+			const float dt = min(ft, 0.05f); // clamp to avoid giant frame jumps
 			tick(dt);
+
+			BeginDrawing();
+
+			render();
+
+			EndDrawing();
+
 		}
-
-		BeginDrawing();
-
-		render();
-
-		EndDrawing();
 
 		if (!checked)
 		{
@@ -73,14 +82,15 @@ void start(void function(float) tick, void function() render)
 */
 Texture2D loadTexture(string path)()
 {
-    static immutable ubyte[] textureData = cast(immutable ubyte[]) import(path);
-    enum fileType = path.extension ~ "\0"; // null-terminated for the C API
+	static immutable ubyte[] textureData = cast(immutable ubyte[]) import(path);
+	enum fileType = path.extension ~ "\0"; // null-terminated for the C API
 
-    Image image = LoadImageFromMemory(fileType.ptr, textureData.ptr, cast(int) textureData.length);
-    Texture2D texture = LoadTextureFromImage(image);
-    UnloadImage(image);
-    SetTextureFilter(texture, TextureFilter.TEXTURE_FILTER_BILINEAR);
-    return texture;
+	Image image = LoadImageFromMemory(fileType.ptr, textureData.ptr, cast(int) textureData.length);
+	assert(IsImageValid(image), "Failed to decode embedded image: " ~ path);
+	Texture2D texture = LoadTextureFromImage(image);
+	UnloadImage(image);
+	SetTextureFilter(texture, TextureFilter.TEXTURE_FILTER_BILINEAR);
+	return texture;
 }
 
 /*
