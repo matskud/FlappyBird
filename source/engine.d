@@ -1,5 +1,6 @@
 import raylib;
 import std.algorithm : min;
+import std.path : extension;
 
 private bool running = false;
 
@@ -68,12 +69,18 @@ void start(void function(float) tick, void function() render)
 
 /*
 	Loads a texture from its path with bilinear filtering.
+	The images are embedded into the executable.
 */
-Texture2D loadTexture(const char* path)
+Texture2D loadTexture(string path)()
 {
-	auto texture = LoadTexture(path);
-	SetTextureFilter(texture, TextureFilter.TEXTURE_FILTER_BILINEAR);
-	return texture;
+    static immutable ubyte[] textureData = cast(immutable ubyte[]) import(path);
+    enum fileType = path.extension ~ "\0"; // null-terminated for the C API
+
+    Image image = LoadImageFromMemory(fileType.ptr, textureData.ptr, cast(int) textureData.length);
+    Texture2D texture = LoadTextureFromImage(image);
+    UnloadImage(image);
+    SetTextureFilter(texture, TextureFilter.TEXTURE_FILTER_BILINEAR);
+    return texture;
 }
 
 /*

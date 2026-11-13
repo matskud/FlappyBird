@@ -6,10 +6,11 @@
   "targetType": "executable",
   "targetPath": "bin",
   "targetName": "flappy-bird",
+  "stringImportPaths": ["."],
 
   "dependencies": {
     "raylib-d": "~>6.2.0"
   },
   "libs": ["raylib", "ucrt", "user32", "gdi32", "winmm"],
-  "lflags": ["/LIBPATH:raylib", "/NODEFAULTLIB:libucrt.lib"],
+  "lflags": ["/LIBPATH:raylib", "/NODEFAULTLIB:libucrt.lib"]
 }
