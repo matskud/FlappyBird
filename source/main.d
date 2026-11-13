@@ -88,9 +88,9 @@ class Bird : Sprite
 		position.y = HEIGHT / 2 - BIRD_RADIUS / 2;
 	}
 
-	void tick(float dt)
+	void tick(float dt, float gravity)
 	{
-		velocity += GRAVITY * dt;
+		velocity += gravity * dt;
 		position.y += velocity * dt;
 	}
 
@@ -153,19 +153,24 @@ void tick(float dt)
 {
 	pillarSpawnDateAccumulator += dt;
 
+	float speedMultiplier = 1 + GetTime() * 0.05;
+	float pillarSpeed = speedMultiplier * PILLAR_SPEED;
+	float pillarSpawnInterval = PILLAR_SPAWN_INTERVAL / (speedMultiplier * 0.8);
+	float gravity = GRAVITY + GRAVITY * speedMultiplier * 0.05;
+
 	// move pillars
 	foreach (pillar; pillars)
 	{
-		pillar.position.x -= dt * PILLAR_SPEED;
+		pillar.position.x -= dt * pillarSpeed;
 	}
 
 	// spawn new pillars
-	if (pillarSpawnDateAccumulator >= PILLAR_SPAWN_INTERVAL)
+	if (pillarSpawnDateAccumulator >= pillarSpawnInterval)
 	{
-		pillarSpawnDateAccumulator -= PILLAR_SPAWN_INTERVAL;
+		pillarSpawnDateAccumulator -= pillarSpawnInterval;
 
 		auto pillar = new Pillar();
-		pillar.position.x = WIDTH - pillarSpawnDateAccumulator * PILLAR_SPEED;
+		pillar.position.x = WIDTH - pillarSpawnDateAccumulator * pillarSpeed;
 		pillars ~= pillar;
 	}
 
@@ -176,7 +181,7 @@ void tick(float dt)
 		bird.flap();
 	}
 
-	bird.tick(dt);
+	bird.tick(dt, gravity);
 
 	if (bird.shouldDie(pillars))
 	{
